@@ -1,0 +1,5 @@
+.vs/*
+SvgCodeGen/bin/*
+SvgCodeGen/obj/*
+test/bin/*
+test/obj/*
