@@ -51,7 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SvgCodeGen\SvgCodeGen.csproj">
-      <Project>{9AB49871-9592-45F6-8CF8-1FB0287042B7}</Project>
+      <Project>{9ab49871-9592-45f6-8cf8-1fb0287042b7}</Project>
       <Name>SvgCodeGen</Name>
     </ProjectReference>
   </ItemGroup>
