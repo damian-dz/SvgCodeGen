@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 namespace SvgCodeGen
 {
     [XmlRoot("polygon")]
-    public class Polygon : Element
+    public class SvgPolygon : SvgElement
     {
         private const string tag = "polygon";
 
@@ -17,16 +17,19 @@ namespace SvgCodeGen
 
         public int PointCount { get { return Points.Split(' ').Length; } }
 
-        public Polygon() { }
+        public SvgPolygon()
+        {
 
-        public Polygon(Point p1, Point p2, Point p3)
+        }
+
+        public SvgPolygon(Point p1, Point p2, Point p3)
         {
             Points += PointToString(p1) + " ";
             Points += PointToString(p2) + " ";
             Points += PointToString(p3);
         }
 
-        public Polygon(double x1, double y1, double x2, double y2, double x3, double y3)
+        public SvgPolygon(double x1, double y1, double x2, double y2, double x3, double y3)
         {
             Points += PointToString(new Point(x1, y1)) + " ";
             Points += PointToString(new Point(x2, y2)) + " ";
@@ -35,7 +38,7 @@ namespace SvgCodeGen
 
         public void AddPoint(Point p)
         {
-            Points += " " + PointToString(p);
+            Points += string.IsNullOrWhiteSpace(Points) ? PointToString(p) : " " + PointToString(p);
         }
 
         public void AddPoint(double x, double y)
@@ -45,22 +48,16 @@ namespace SvgCodeGen
 
         public void InsertPoint(int idx, Point p)
         {
-            var temp = new List<string>(Points.Split(' '));
-            temp.Insert(idx, PointToString(p));
-            Points = string.Join(" ", temp.ToArray());
+            var pointList = new List<string>(Points.Split(' '));
+            pointList.Insert(idx, PointToString(p));
+            Points = string.Join(" ", pointList.ToArray());
         }
 
         public void InsertPoint(int idx, double x, double y)
         {
-            var temp = new List<string>(Points.Split(' '));
-            temp.Insert(idx, PointToString(new Point(x, y)));
-            Points = string.Join(" ", temp.ToArray());
-        }
-
-        private string PointToString(Point p)
-        {
-            var ci = CultureInfo.InvariantCulture;
-            return p.X.ToString(ci) + "," + p.Y.ToString(ci);
+            var pointList = new List<string>(Points.Split(' '));
+            pointList.Insert(idx, PointToString(new Point(x, y)));
+            Points = string.Join(" ", pointList.ToArray());
         }
 
         public void RemovePoint(int idx)
@@ -79,10 +76,9 @@ namespace SvgCodeGen
         {
             var ci = CultureInfo.InvariantCulture;
             XmlElement polygonNode = doc.CreateElement(string.Empty, tag, string.Empty);
+            SetNodeIdAttribute(ref polygonNode, ref ci);
             polygonNode.SetAttribute("points", Points);
-            if (Stroke != null) polygonNode.SetAttribute("stroke", Stroke);
-            if (Fill != null) polygonNode.SetAttribute("fill", Fill);
-            if (StrokeWidth > 0) polygonNode.SetAttribute("stroke-width", StrokeWidth.ToString(ci));
+            SetCommonNodeAttributes(ref polygonNode, ref ci);
             return polygonNode;
         }
     }

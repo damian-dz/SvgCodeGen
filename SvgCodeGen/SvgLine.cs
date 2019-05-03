@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 namespace SvgCodeGen
 {
     [XmlRoot("line")]
-    public class Line : Element
+    public class SvgLine : SvgElement
     {
         private const string tag = "line";
 
@@ -21,14 +21,43 @@ namespace SvgCodeGen
         [XmlAttribute("y2")]
         public double Y2;
 
-        public Line() { }
+        public SvgLine()
+        {
 
-        public Line(double x1, double y1, double x2, double y2)
+        }
+
+        public SvgLine(double x1, double y1, double x2, double y2)
         {
             X1 = x1;
             Y1 = y1;
             X2 = x2;
             Y2 = y2;
+        }
+
+        public SvgLine(Point p1, Point p2)
+        {
+            X1 = p1.X;
+            Y1 = p1.Y;
+            X2 = p2.X;
+            Y2 = p2.Y;
+        }
+
+        public void RotateAround(Point pivot, double angle)
+        {
+            Point p1 = new Point(X1, Y1).RotateAround(pivot, angle);
+            Point p2 = new Point(X2, Y2).RotateAround(pivot, angle);
+            X1 = p1.X;
+            Y1 = p1.Y;
+            X2 = p2.X;
+            Y2 = p2.Y;
+        }
+
+        public void Translate(double deltaX, double deltaY)
+        {
+            X1 += deltaX;
+            Y1 += deltaY;
+            X2 += deltaX;
+            Y2 += deltaY;
         }
 
         public override bool CanGenerateValidSvgCode()
@@ -40,13 +69,12 @@ namespace SvgCodeGen
         {
             var ci = CultureInfo.InvariantCulture;
             XmlElement lineNode = doc.CreateElement(string.Empty, tag, string.Empty);
+            SetNodeIdAttribute(ref lineNode, ref ci);
             lineNode.SetAttribute("x1", X1.ToString(ci));
             lineNode.SetAttribute("y1", Y1.ToString(ci));
             lineNode.SetAttribute("x2", X2.ToString(ci));
             lineNode.SetAttribute("y2", Y2.ToString(ci));
-            if (Stroke != null) lineNode.SetAttribute("stroke", Stroke);
-            if (StrokeWidth > 0) lineNode.SetAttribute("stroke-width", StrokeWidth.ToString(ci));
-            if (Style != null) lineNode.SetAttribute("style", Style);
+            SetCommonNodeAttributes(ref lineNode, ref ci);
             return lineNode;
         }
     }

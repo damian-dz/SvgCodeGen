@@ -1,4 +1,6 @@
-﻿namespace SvgCodeGen
+﻿using System;
+
+namespace SvgCodeGen
 {
     public enum Color
     {
@@ -29,6 +31,19 @@
         {
             X = x;
             Y = y;
+        }
+
+        public Point RotateAround(Point pivot, double angle)
+        {
+            double px = X - pivot.X;
+            double py = Y - pivot.Y;
+            double s = Math.Sin(angle);
+            double c = Math.Cos(angle);
+            double xnew = px * c - py * s;
+            double ynew = px * s + py * c;
+            px = xnew + pivot.X;
+            py = ynew + pivot.Y;
+            return new Point(px, py);
         }
 
         public override string ToString()
