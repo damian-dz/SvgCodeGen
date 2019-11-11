@@ -19,20 +19,16 @@ namespace test
             var container = new Svg(400, 300);
             var group = new SvgGroup();
             group.SetStroke(Color.Blue);
-            for (int i = 10; i <= 390; i += 20)
-            {
+            for (int i = 10; i <= 390; i += 20) {
                 var line = new SvgLine(i, 10, i, 290);
-                if (i == 10 || i == 390)
-                {
+                if (i == 10 || i == 390) {
                     line.StrokeWidth = 3;
                 }
                 group.AddElement(line);
             }
-            for (int i = 10; i <= 290; i += 20)
-            {
+            for (int i = 10; i <= 290; i += 20) {
                 var line = new SvgLine(10, i, 390, i);
-                if (i == 10 || i == 290)
-                {
+                if (i == 10 || i == 290) {
                     line.StrokeWidth = 3;
                 }
                 group.AddElement(line);
@@ -53,13 +49,11 @@ namespace test
             int stepX = width / cellsX;
             int stepY = height / cellsY;
             group.AddElement(rect);
-            for (double i = x + stepX; i < x + width; i += stepX)
-            {
+            for (double i = x + stepX; i < x + width; i += stepX) {
                 var line = new SvgLine(i, y, i, y + height);
                 group.AddElement(line);
             }
-            for (int i = y + stepY; i < y + height; i += stepY)
-            {
+            for (int i = y + stepY; i < y + height; i += stepY) {
                 var line = new SvgLine(x, i, x + width, i);
                 group.AddElement(line);
             }
@@ -97,8 +91,8 @@ namespace test
         {
             double s = Math.Sin(angle);
             double c = Math.Cos(angle);
-            double px  = p.X - pivot.X;
-            double py =  p.Y - pivot.Y;
+            double px = p.X - pivot.X;
+            double py = p.Y - pivot.Y;
             double xnew = px * c - py * s;
             double ynew = px * s + py * c;
             px = xnew + pivot.X;
@@ -147,22 +141,20 @@ namespace test
             {
                 StrokeDashArray = "20 3 4 3"
             };
-          //  var verLine = new Line(cx, cy - r1 - 10, cx, cy + r1 + 10)
-          //  {
-          //      StrokeDashArray = "20 3 4 3"
-          //  };
+            //  var verLine = new Line(cx, cy - r1 - 10, cx, cy + r1 + 10)
+            //  {
+            //      StrokeDashArray = "20 3 4 3"
+            //  };
             group.AddElement(circle1);
             group.AddElement(circle2);
             group.AddElement(circleDashed);
             var pivot = new Point(cx, cy);
             var startPoint = new Point(cx, cy - rDashed);
-            for (double i = 0, alpha = 0; i < 4; i++, alpha += Math.PI / 2)
-            {
+            for (double i = 0, alpha = 0; i < 4; i++, alpha += Math.PI / 2) {
                 Point center = startPoint.RotateAround(pivot, alpha);
                 group.AddElement(new SvgCircle(center, r01));
             }
-            for (double i = 0, alpha = -Math.PI / 4; i < 2; i++, alpha += Math.PI)
-            {
+            for (double i = 0, alpha = -Math.PI / 4; i < 2; i++, alpha += Math.PI) {
                 Point center = startPoint.RotateAround(pivot, alpha);
                 group.AddElement(new SvgCircle(center, r02));
             }
@@ -170,8 +162,7 @@ namespace test
             var p1 = new Point(cx, cy - r2);
             var p2 = new Point(cx, 0);
 
-            for (double i = 0, alpha = -Math.PI / 4; i < 2; i++, alpha += Math.PI)
-            {
+            for (double i = 0, alpha = -Math.PI / 4; i < 2; i++, alpha += Math.PI) {
                 var line = new SvgLine(p1.RotateAround(pivot, alpha), p2.RotateAround(pivot, alpha));
                 line.StrokeDashArray = "20 3 4 3";
                 group.AddElement(line);
@@ -242,8 +233,7 @@ namespace test
         {
             double step = (x2 - x1) / (n - 1);
             var y = new double[n];
-            for (int i = 0; i < n; i++)
-            {
+            for (int i = 0; i < n; i++) {
                 y[i] = x1 + step * i;
             }
             return y;
@@ -253,8 +243,7 @@ namespace test
         {
             int n = x.Length;
             var y = new double[n];
-            for (int i = 0; i < n; i++)
-            {
+            for (int i = 0; i < n; i++) {
                 y[i] = Math.Sin(x[i]);
             }
             return y;
@@ -262,12 +251,12 @@ namespace test
 
         static void Main(string[] args)
         {
-            var path = new SvgPath();
-            path.Id = "test";
-            path.MoveTo(150, 0);
-            path.LineTo(75, 200);
-            path.LineTo(225, 200);
-            path.Close();
+            //var path = new SvgPath();
+            //path.Id = "test";
+            //path.MoveTo(150, 0);
+            //path.LineTo(75, 200);
+            //path.LineTo(225, 200);
+            //path.Close();
 
 
 
@@ -283,14 +272,14 @@ namespace test
             svg.SaveAs("test_grid.svg");
 
 
-            var svg2 = new Svg("test_grid.svg");
-            Console.WriteLine(svg2.GenerateSvgCode());
+            //var svg2 = new Svg("test_grid.svg");
+            //  Console.WriteLine(svg2.GenerateSvgCode());
 
-          
+
 
 
             var svgSine = new Svg(1000, 100);
-            svgSine.SetViewBox(0, -1.025, 20, 2.05);
+            svgSine.SetViewBox(0, -1.025, 20, 2.05, "px");
 
             var polyline = new SvgPolyline();
             var xPoints = LinSpace(0, 20, 800);
@@ -298,9 +287,21 @@ namespace test
 
             polyline.SetPoints(xPoints, yPoints);
             polyline.Style = "fill:none;stroke:black;stroke-width:0.05";
-            Console.WriteLine(polyline.GenerateSvgCode());
-            svgSine.AddElement(polyline);
+            // Console.WriteLine(polyline.GenerateSvgCode());
+
+            Console.WriteLine(polyline.GetType().BaseType.Name);
+            var svgPlot = new Svg("plot.svg");
+            //   Console.WriteLine(svgPlot.GenerateSvgCode());
+            svgPlot.SaveAs("plot_copy.svg");
+
+            var gr = new SvgMarker();
+            gr.RefX = 1234;
+            gr.AddElement(polyline);
+            svgSine.AddElement(gr);
             svgSine.SaveAs("test_sine.svg");
+
+            //Console.WriteLine(((SvgGroup)svgPlot.GetElementAt(0)).SomeField);
+
 
 
             // GenerateLeftArrow();

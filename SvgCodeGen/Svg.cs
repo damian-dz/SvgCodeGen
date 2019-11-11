@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -12,13 +13,17 @@ namespace SvgCodeGen
     {
         private static readonly Dictionary<string, Type> typeMap = new Dictionary<string, Type>
         { { "circle",   typeof(SvgCircle)    },
+          { "defs",     typeof(SvgDefs)      },
+          { "ellipse",  typeof(SvgEllipse)   },
           { "g",        typeof(SvgGroup)     },
           { "line",     typeof(SvgLine)      },
-          { "rect",     typeof(SvgRectangle) },
+          { "marker",   typeof(SvgMarker)    },       
           { "path",     typeof(SvgPath)      },
           { "polygon",  typeof(SvgPolygon)   },
           { "polyline", typeof(SvgPolyline)  },
-          { "text",     typeof(SvgText)      } };
+          { "rect",     typeof(SvgRectangle) },
+          { "text",     typeof(SvgText)      },
+          { "use",      typeof(SvgUse)       } };
 
         public double Width;
         public double Height;
@@ -27,13 +32,66 @@ namespace SvgCodeGen
 
         public int ElementCount { get { return elements.Count;  } }
 
-        private SvgGroup DeserializeGroup(XmlNode parent)
+        public string RemoveAllChildren(XmlNode xmlNode)
         {
-            var group = new SvgGroup();
+            while (xmlNode.HasChildNodes)
+            {
+                xmlNode.RemoveChild(xmlNode.FirstChild);
+            }
+            return xmlNode.OuterXml;
+        }
+
+        private SvgDefs DeserializeDefs(XmlNode parent)
+        {
+            SvgDefs defs = new SvgDefs();
+            var defsSerializer = new XmlSerializer(typeof(SvgDefs));
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(parent.OuterXml)))
+            {
+                defs = (SvgDefs)defsSerializer.Deserialize(XmlReader.Create(stream));
+            }
             foreach (XmlNode child in parent)
             {
                 var serializer = new XmlSerializer(typeMap[child.Name]);
-                if (typeMap[child.Name] != typeof(SvgGroup))
+                if (typeMap[child.Name] != typeof(SvgDefs)
+                    && typeMap[child.Name] != typeof(SvgGroup)
+                    && typeMap[child.Name] != typeof(SvgMarker))
+                {
+                    using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(child.OuterXml)))
+                    {
+                        var elem = (SvgElement)serializer.Deserialize(XmlReader.Create(stream));
+                        defs.AddElement(elem);
+                    }
+                }
+                else if (typeMap[child.Name] == typeof(SvgDefs))
+                {
+                    defs.AddElement(DeserializeDefs(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgGroup))
+                {
+                    defs.AddElement(DeserializeGroup(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgMarker))
+                {
+                    defs.AddElement(DeserializeMarker(child));
+                }
+            }
+            return defs;
+        }
+
+        private SvgGroup DeserializeGroup(XmlNode parent)
+        {
+            SvgGroup group;
+            var groupSerializer = new XmlSerializer(typeof(SvgGroup));
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(parent.OuterXml)))
+            {
+                group = (SvgGroup)groupSerializer.Deserialize(XmlReader.Create(stream));
+            }
+            foreach (XmlNode child in parent)
+            {
+                var serializer = new XmlSerializer(typeMap[child.Name]);
+                if (typeMap[child.Name] != typeof(SvgDefs)
+                    && typeMap[child.Name] != typeof(SvgGroup)
+                    && typeMap[child.Name] != typeof(SvgMarker))
                 {
                     using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(child.OuterXml)))
                     {
@@ -41,12 +99,103 @@ namespace SvgCodeGen
                         group.AddElement(elem);
                     }
                 }
-                else
+                else if (typeMap[child.Name] == typeof(SvgDefs))
                 {
-                    DeserializeGroup(child);
+                    group.AddElement(DeserializeDefs(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgGroup))
+                {
+                    group.AddElement(DeserializeGroup(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgMarker))
+                {
+                    group.AddElement(DeserializeMarker(child));
                 }
             }
             return group;
+        }
+
+        private SvgMarker DeserializeMarker(XmlNode parent)
+        {
+            SvgMarker marker;
+            var markerSerializer = new XmlSerializer(typeof(SvgMarker));
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(parent.OuterXml)))
+            {
+                marker = (SvgMarker)markerSerializer.Deserialize(XmlReader.Create(stream));
+            }
+            foreach (XmlNode child in parent)
+            {
+                var serializer = new XmlSerializer(typeMap[child.Name]);
+                if (typeMap[child.Name] != typeof(SvgDefs)
+                    && typeMap[child.Name] != typeof(SvgGroup)
+                    && typeMap[child.Name] != typeof(SvgMarker))
+                {
+                   
+                    using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(child.OuterXml)))
+                    {
+                        var elem = (SvgElement)serializer.Deserialize(XmlReader.Create(stream));
+                        marker.AddElement(elem);
+                    }
+                }
+                else if (typeMap[child.Name] == typeof(SvgDefs))
+                {
+                    marker.AddElement(DeserializeDefs(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgGroup))
+                {
+                    marker.AddElement(DeserializeGroup(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgMarker))
+                {
+                    marker.AddElement(DeserializeMarker(child));
+                }
+            }
+            return marker;
+        }
+
+        private SvgNestedElement DeserializeNestedElement(XmlNode parent)
+        {
+            SvgNestedElement nestedElem = GetNestedElementInstance(typeMap[parent.Name]);
+            var markerSerializer = new XmlSerializer(nestedElem.GetType());
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(parent.OuterXml)))
+            {
+                nestedElem = (SvgNestedElement)markerSerializer.Deserialize(XmlReader.Create(stream));
+            }
+            foreach (XmlNode child in parent)
+            {
+                var serializer = new XmlSerializer(typeMap[child.Name]);
+                if (typeMap[child.Name].BaseType != typeof(SvgNestedElement))
+                {
+
+                    using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(child.OuterXml)))
+                    {
+                        var elem = (SvgElement)serializer.Deserialize(XmlReader.Create(stream));
+                        nestedElem.AddElement(elem);
+                    }
+                }
+                else
+                {
+                    nestedElem.AddElement(DeserializeNestedElement(child));
+                }
+            }
+            return nestedElem;
+        }
+
+
+        public SvgNestedElement GetNestedElementInstance(Type t)
+        {
+            if (t == typeof(SvgDefs))
+            {
+                return new SvgDefs();
+            }
+            else if (t == typeof(SvgGroup))
+            {
+                return new SvgGroup();
+            }
+            else
+            {
+                return new SvgMarker();
+            }
         }
 
         public Svg(string filename)
@@ -54,27 +203,40 @@ namespace SvgCodeGen
             var doc = new XmlDocument();
             string allText = File.ReadAllText(filename);
             allText = allText.Replace("xmlns=\"http://www.w3.org/2000/svg\"", string.Empty);
+            allText = Regex.Replace(allText, @"<!--[^<]*-->", string.Empty);
+            Console.WriteLine(allText);
             doc.LoadXml(allText);
             XmlAttributeCollection rootAttributes = doc.ChildNodes[0].Attributes;
-            Width = double.Parse(rootAttributes["width"].Value);
-            Height = double.Parse(rootAttributes["height"].Value);
+            if (rootAttributes["width"] != null) Width = double.Parse(rootAttributes["width"].Value);
+            if (rootAttributes["height"] != null) Height = double.Parse(rootAttributes["height"].Value);
             if (rootAttributes["viewBox"] != null) ViewBox = rootAttributes["viewBox"].Value;
-            foreach (XmlNode node in doc.ChildNodes[0])
+            foreach (XmlNode child in doc.ChildNodes[0])
             {
-                var serializer = new XmlSerializer(typeMap[node.Name]);
-                if (typeMap[node.Name] != typeof(SvgGroup))
-                {                 
-                    using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(node.OuterXml)))
+                var serializer = new XmlSerializer(typeMap[child.Name]);
+                if (typeMap[child.Name] != typeof(SvgDefs)
+                    && typeMap[child.Name] != typeof(SvgGroup)
+                    && typeMap[child.Name] != typeof(SvgMarker))
+                {
+                    using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(child.OuterXml)))
                     {
                         var elem = (SvgElement)serializer.Deserialize(XmlReader.Create(stream));
                         elements.Add(elem);
                     }
                 }
-                else
+                else if (typeMap[child.Name] == typeof(SvgDefs))
                 {
-                    elements.Add(DeserializeGroup(node));
+                    elements.Add(DeserializeDefs(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgGroup))
+                {
+                    elements.Add(DeserializeGroup(child));
+                }
+                else if (typeMap[child.Name] == typeof(SvgMarker))
+                {
+                    elements.Add(DeserializeMarker(child));
                 }
             }
+
         }
 
         public Svg(double width, double height)
@@ -103,6 +265,11 @@ namespace SvgCodeGen
             ViewBox = string.Format("{0} {1} {2} {3}", x, y, width, height);
         }
 
+        public void SetViewBox(double x, double y, double width, double height, string unit)
+        {
+            ViewBox = string.Format("{0}{1} {2}{3} {4}{5} {6}{7}", x, unit, y, unit, width, unit, height, unit);
+        }
+
         public string GenerateSvgCode()
         {
             return GenerateXmlDocument().OuterXml;
@@ -115,8 +282,8 @@ namespace SvgCodeGen
             svgNode.SetAttribute("xmlns", @"http://www.w3.org/2000/svg");
             svgNode.SetAttribute("version", "1.1");
             svgNode.SetAttribute("baseProfile", "full");
-            svgNode.SetAttribute("width", Width.ToString());
-            svgNode.SetAttribute("height", Height.ToString());
+            if (Width > 0) svgNode.SetAttribute("width", Width.ToString());
+            if (Height > 0) svgNode.SetAttribute("height", Height.ToString());
             if (ViewBox != null) svgNode.SetAttribute("viewBox", ViewBox);
             foreach (SvgElement elem in elements)
             {

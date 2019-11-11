@@ -22,6 +22,11 @@ namespace SvgCodeGen
 
         }
 
+        public void ArcTo(double rx, double ry, double xRot, bool large, bool sweep, double x, double y)
+        {
+            D += string.Format(" A{0} {1} {2} {3} {4} {5} {6}", rx, ry, xRot, Convert.ToInt32(large), Convert.ToInt32(sweep), x, y);
+        }
+
         public void Close()
         {
             D += " Z";

@@ -8,37 +8,13 @@ using System.Xml.Serialization;
 namespace SvgCodeGen
 {
     [XmlRoot("g")]
-    public class SvgGroup : SvgElement
+    public class SvgGroup : SvgNestedElement
     {
         private const string tag = "g";
-
-        private readonly List<SvgElement> elements = new List<SvgElement>();
-
-        public int ElementCount { get { return elements.Count; } }
 
         public SvgGroup()
         {
 
-        }
-
-        public void AddElement(SvgElement elem)
-        {
-            elements.Add(elem);
-        }
-
-        public SvgElement GetElementAt(int idx)
-        {
-            return elements[idx];
-        }
-
-        public void RemoveElementAt(int idx)
-        {
-            elements.RemoveAt(idx);
-        }
-
-        public override bool CanGenerateValidSvgCode()
-        {
-            return elements.Count > 0 ? true : false;
         }
 
         public override XmlElement GenerateNode(ref XmlDocument doc)

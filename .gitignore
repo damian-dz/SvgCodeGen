@@ -1,4 +1,4 @@
-.vs/*
-SvgCodeGen/bin/*
-SvgCodeGen/obj/*
+.vs/
+*bin/
+*obj/
 test/

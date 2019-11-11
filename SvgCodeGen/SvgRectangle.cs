@@ -13,13 +13,13 @@ namespace SvgCodeGen
         private const string tag = "rect";
 
         [XmlAttribute("x")]
-        public double X;
+        public double X { get; set; }
         [XmlAttribute("y")]
-        public double Y;
+        public double Y { get; set; }
         [XmlAttribute("width")]
-        public double Width;
+        public double Width { get; set; }
         [XmlAttribute("height")]
-        public double Height;
+        public double Height { get; set; }
 
         public SvgRectangle()
         {

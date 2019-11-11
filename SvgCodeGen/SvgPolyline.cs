@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -16,6 +13,12 @@ namespace SvgCodeGen
 
         [XmlAttribute("points")]
         public string Points;
+        [XmlAttribute("marker-start")]
+        public string MarkerStart;
+        [XmlAttribute("marker-mid")]
+        public string MarkerMid;
+        [XmlAttribute("marker-end")]
+        public string MarkerEnd;
 
         public int PointCount { get { return Points.Split(' ').Length; } }
 
@@ -26,28 +29,28 @@ namespace SvgCodeGen
 
         public SvgPolyline(Point p1, Point p2)
         {
-            Points += PointToString(p1) + " ";
-            Points += PointToString(p2);
+            Points += PointToString(p1) + " " 
+                + PointToString(p2);
         }
 
         public SvgPolyline(Point p1, Point p2, Point p3)
         {
-            Points += PointToString(p1) + " ";
-            Points += PointToString(p2) + " ";
-            Points += PointToString(p3);
+            Points += PointToString(p1) + " " 
+                + PointToString(p2) + " " 
+                + PointToString(p3);
         }
 
         public SvgPolyline(double x1, double y1, double x2, double y2)
         {
-            Points += PointToString(new Point(x1, y1)) + " ";
-            Points += PointToString(new Point(x2, y2));
+            Points += PointToString(new Point(x1, y1)) + " " 
+                + PointToString(new Point(x2, y2));
         }
 
         public SvgPolyline(double x1, double y1, double x2, double y2, double x3, double y3)
         {
-            Points += PointToString(new Point(x1, y1)) + " ";
-            Points += PointToString(new Point(x2, y2)) + " ";
-            Points += PointToString(new Point(x3, y3));
+            Points += PointToString(new Point(x1, y1)) + " " 
+                + PointToString(new Point(x2, y2)) + " " 
+                + PointToString(new Point(x3, y3));
         }
 
         public void AddPoint(Point p)
@@ -116,6 +119,9 @@ namespace SvgCodeGen
             XmlElement polylineNode = doc.CreateElement(string.Empty, tag, string.Empty);
             SetNodeIdAttribute(ref polylineNode, ref ci);
             polylineNode.SetAttribute("points", Points);
+            if (MarkerStart != null) polylineNode.SetAttribute("marker-start", MarkerStart);
+            if (MarkerMid != null) polylineNode.SetAttribute("marker-mid", MarkerMid);
+            if (MarkerEnd != null) polylineNode.SetAttribute("marker-end", MarkerEnd);
             SetCommonNodeAttributes(ref polylineNode, ref ci);
             return polylineNode;
         }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -33,11 +28,17 @@ namespace SvgCodeGen
             R = r;
         }
 
-        public SvgCircle(Point p, double r)
+        public SvgCircle(Point c, double r)
         {
-            Cx = p.X;
-            Cy = p.Y;
+            Cx = c.X;
+            Cy = c.Y;
             R = r;
+        }
+
+        public void SetCenter(double cx, double cy)
+        {
+            Cx = cx;
+            Cy = cy;
         }
 
         public void SetCenter(Point p)

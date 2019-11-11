@@ -19,7 +19,7 @@ namespace SvgCodeGen
         [XmlAttribute("y")]
         public double Y;
         [XmlText]
-        public string InnerText;
+        public string InnerText { get; set; }
 
         public SvgText()
         {
